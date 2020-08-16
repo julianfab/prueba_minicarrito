@@ -1,0 +1,21 @@
+
+Instrucciones: 
+
+La prueba fue realizada con el framework de django y angularjs, base de datos postgresql
+
+1. Instalar los requerimientos en ambiente o local del archivo "requerimientos.txt"
+
+2. Restaurar el backup de la base de datos que es el archivo "pruebafront.sql" o crear la base de datos con las siguientes caracteristicas:  
+'NAME': 'prueba_use',
+'USER': 'postgres',
+'PASSWORD': 'contra12345',
+'HOST':'localhost',
+'PORT':5433,
+
+3. Pagina de inicio: http://127.0.0.1:8000/productos/
+
+
+usuarios creados:
+
+user: jrak
+contraseña: jrak

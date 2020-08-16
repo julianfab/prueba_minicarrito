@@ -1,0 +1,219 @@
+{% extends 'base/base.html' %}
+{% load staticfiles %}
+
+{% block extrastatic %}
+<style media="screen"></style>
+
+{% endblock %}
+<script src="{% static 'js/lib/angular.min.js'%}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.css" />
+
+{% block title %} Productos {% endblock %}
+
+{% block content %}
+
+    <div class="row">
+
+       <div class="col-lg-4">
+            <div class="jumbotron jumbotron-fluid">
+                <div class="container">
+                    <h1 class="display-4">Carrito de Compras</h1>
+                    <h2> <strong id="total_carrito">TOTAL : </strong></h2>
+                    <h3> Items </h3>
+                    <div class="col" id="listado_items">                        
+                    </div>                      
+                    <button type="button" class="btn btn-light" onclick="vaciarCarrito()">Limpiar Carrito</button>
+                    <button type="button" class="btn btn-success" data-toggle="modal" data-target="#confirmacionModal" onclick="vaciarCarrito()">Finalizar Compra</button>
+            </div>
+        
+        </div>
+        
+    </div>
+
+    <div class="col expand">
+        <div class="jumbotron jumbotron-expand">
+        <div class="container">
+            <h1 class="display-4">Productos</h1>
+            <div id="paginacion"> </div>
+            <div class="row" id="listado_productos">
+            
+            </div>
+        </div>
+        </div>
+    </div>
+
+    </div>
+
+    
+
+    
+
+            
+
+{% endblock %}
+
+{% block extrajs %}
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.10.0.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(function(){
+      console.log("adsadasdsadsadsada")
+      obtenerCarrito();
+      obtenerItemsCarrito();
+      obtenerProductos();     
+  });
+
+    var obtenerCarrito = function(){
+        $.ajax({
+            type: 'GET',
+            url: '../api/carrito/',
+    
+        }).then(function(response){
+            console.log("carrito");
+            console.log(response);
+            $("#total_carrito").empty();
+            document.getElementById("total_carrito").innerHTML = "TOTAL : "+response.results[0].total;
+            
+        }), function(error){
+            console.log(error);
+        }
+    }
+
+    var obtenerItemsCarrito = function(){
+        $.ajax({
+            type: 'GET',
+            url: '../api/items_carrito/',
+    
+        }).then(function(response){
+            console.log("items_carrito");
+            console.log(response);
+            $("#listado_items").empty();
+            response.results.forEach(element => {
+                $("#listado_items").append('<div class="row"> <div class="col-5 "><h6> '+element.producto.nombre+'</h6></div> <div class="col-1"><h6>'+element.cantidad+'</h6></div> <div class="col-1"><h6>'+element.producto.precio+'</h6></div> <div class="col-1"><h6>'+element.subtotal+'</h6></div> <div class="col-1"><h6><button class="btn-info" type="button" onclick="disminuirProductoCarrito('+element.producto.id+')">-</button></h6></div> <div class="col-1"><h6><button class="btn-info" type="button" onclick="añadirProductoCarrito('+element.producto.id+')">+</button></h6></div> <div class="col-1"><h6><button class="btn-danger" type="button" onclick="eliminarItemCarrito('+element.producto.id+')">Eliminar</button></h6></div> </div>');
+            });
+            
+        }), function(error){
+            console.log(error);
+        }
+    }
+
+    var obtenerProductos = function(){
+        $.ajax({
+            type: 'GET',
+            url: '../api/productos/',
+    
+        }).then(function(response){
+            console.log("productos");
+            console.log(response);
+            prev = ""
+            if(response.previous == null){
+                prev = "disabled"
+            }
+            nex = ""
+            if(response.next == null){
+                nex = "disabled"
+            }
+            
+            $("#paginacion").append('<nav aria-label="Page navigation example"><ul class="pagination"><li class="page-item '+prev+'"><button type="button" class="page-link" onclick="cambiarPagina(\''+response.previous+'\')">Anterior</button></li><li class="page-item '+nex+'"><button type="button" class="page-link" onclick="cambiarPagina(\''+response.next+'\')">Siguiente</button></li></ul></nav>')    
+            response.results.forEach(element => {                            
+                $("#listado_productos").append('<div class="card" style="width: 18rem;"><img class="card-img-top" src="'+element.imagen+'" alt="Card image cap"><div class="card-body"><h5 class="card-title">'+element.nombre+'</h5><h5>PRECIO: '+element.precio+'</h5><button class="btn-primary" type="button" onclick="añadirProductoCarrito('+element.id+')">Añadir al Carrito</button></div></div>');
+            });
+            
+        }), function(error){
+            console.log(error);
+        }
+    }
+
+    var añadirProductoCarrito = function(idProductoIn){
+        $.ajax({
+            type: 'GET',
+            url: '../api/anadirProducto/',
+            data: {
+                idProducto : idProductoIn,
+            },
+            success: function(response){
+                console.log(response);
+                obtenerCarrito();
+                obtenerItemsCarrito();
+            }
+    
+        });
+    }
+    
+    var disminuirProductoCarrito = function(idProductoIn){
+        $.ajax({
+            type: 'GET',
+            url: '../api/disminuirItemProducto/',
+            data: {
+                idProducto : idProductoIn,
+            },
+            success: function(response){
+                console.log(response);
+                obtenerCarrito();
+                obtenerItemsCarrito();
+
+                
+            }
+    
+        });
+    }
+
+    var eliminarItemCarrito = function(idProductoIn){
+        $.ajax({
+            type: 'GET',
+            url: '../api/eliminarItemCarrito/',
+            data: {
+                idProducto : idProductoIn,
+            },
+            success: function(response){
+                console.log(response);
+                obtenerCarrito();
+                obtenerItemsCarrito();
+
+                
+            }
+    
+        });
+    }
+
+    var vaciarCarrito = function(){
+        $.ajax({
+            type: 'GET',
+            url: '../api/vaciarCarrito/',
+            success: function(response){
+                console.log(response);
+                obtenerCarrito();
+                obtenerItemsCarrito();
+            }
+    
+        });
+    }
+
+    var cambiarPagina = function(urlIn){
+        $.ajax({
+            type: 'GET',
+            url: urlIn,
+            success: function(response){
+                console.log(response);
+                $("#listado_productos").empty();
+                $("#paginacion").empty();
+                prev = ""
+                if(response.previous == null){
+                    prev = "disabled"
+                }
+                nex = ""
+                if(response.next == null){
+                    nex = "disabled"
+                }
+                $("#paginacion").append('<nav aria-label="Page navigation example"><ul class="pagination"><li class="page-item '+prev+'"><button type="button" class="page-link" onclick="cambiarPagina(\''+response.previous+'\')">Anterior</button></li><li class="page-item '+nex+'"><button type="button" class="page-link" onclick="cambiarPagina(\''+response.next+'\')">Siguiente</button></li></ul></nav>')    
+                response.results.forEach(element => {                            
+                    $("#listado_productos").append('<div class="card" style="width: 18rem;"><img class="card-img-top" src="'+element.imagen+'" alt="Card image cap"><div class="card-body"><h5 class="card-title">'+element.nombre+'</h5><h5>PRECIO: '+element.precio+'</h5><button class="btn-primary" type="button" onclick="añadirProductoCarrito('+element.id+')">Añadir al Carrito</button></div></div>');
+                });
+            }
+    
+        });
+    }
+    
+</script>
+
+{% endblock extrajs %} 
